@@ -11,8 +11,8 @@ export class Payment {
   @PrimaryGeneratedColumn()
   public id: number;
 
-  @Column({ name: 'payment_reference' })
-  payment_reference: string;
+  @Column()
+  order_reference: string;
 
   @Column({ type: 'float' })
   public amount: number;
