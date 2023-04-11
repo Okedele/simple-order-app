@@ -30,7 +30,7 @@ export class Order {
   @Column({ type: 'float' })
   public amount_payable: number;
 
-  @Column({ type: 'float' })
+  @Column({ type: 'float', nullable: true })
   public amount_paid: number;
 
   @Column({ type: 'float' })
@@ -42,7 +42,7 @@ export class Order {
   @Column({ type: 'timestamp' })
   expected_payment_date: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   actual_payment_date: Date;
 
   @CreateDateColumn({
