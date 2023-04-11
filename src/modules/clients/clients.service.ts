@@ -1,26 +1,61 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateClientDto } from './dto/create-client.dto';
-import { UpdateClientDto } from './dto/update-client.dto';
+import { Client } from '../../entities/clients.entity';
+import axios, { AxiosInstance } from "axios";
+
 
 @Injectable()
 export class ClientsService {
-  create(createClientDto: CreateClientDto) {
-    return 'This action adds a new client';
+  protected readonly axiosInstance: AxiosInstance
+  protected readonly customerPartnerId: string;
+  constructor(
+    @InjectRepository(Client)
+    private readonly clientRepository: Repository<Client>,
+  ) {
+    this.axiosInstance = axios.create({
+        baseURL: process.env.b54_API,
+        headers: {
+            Authorization: process.env.b54_API_KEY,
+            "Content-Type": 'application/json'
+        }
+    })
+    this.customerPartnerId = process.env.b54_CUSTOMER_PARTNER_ID
   }
 
-  findAll() {
-    return `This action returns all clients`;
+  async create(createClientDto: CreateClientDto) {
+    try {
+      const {id_type: unique_id_type, id_value: unique_id, ...clientData} = createClientDto
+      const client = await this.clientRepository.findOne({where: {
+        id_type: unique_id_type, id_value: unique_id,
+      }})
+      if (client) {
+        return client
+      } else {
+        let result = await this.axiosInstance.post(`customer_partners/${this.customerPartnerId}/customers`, {
+          unique_id_type,
+          unique_id,
+          ...clientData
+        })
+        if(result?.data?.status != 'success') throw new HttpException('unable to create customer', HttpStatus.INTERNAL_SERVER_ERROR)
+        let newClient = this.clientRepository.create(createClientDto)
+        return await this.clientRepository.save(newClient);
+      }
+    } catch(error) {
+      return error.message
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} client`;
+  async findAll() {
+    return await this.clientRepository.find({});
   }
 
-  update(id: number, updateClientDto: UpdateClientDto) {
-    return `This action updates a #${id} client`;
+  async findOne(id: number) {
+    return await this.clientRepository.findOne({where: {id}})
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} client`;
+  async remove(id: number) {
+    return await this.clientRepository.delete(id)
   }
 }
