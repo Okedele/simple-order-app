@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { CreateClientDto } from './dto/create-client.dto';
 import { Client } from '../../entities/clients.entity';
 import axios, { AxiosInstance } from "axios";
-import { ConfigService } from '@nestjs/config';
 
 
 @Injectable()
@@ -14,10 +13,9 @@ export class ClientsService {
   constructor(
     @InjectRepository(Client)
     private readonly clientRepository: Repository<Client>,
-    configService: ConfigService
   ) {
     this.axiosInstance = axios.create({
-        baseURL: configService.get("b54_API"),
+        baseURL: process.env.b54_API,
         headers: {
             Authorization: process.env.b54_API_KEY,
             "Content-Type": 'application/json'
