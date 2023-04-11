@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -24,13 +24,36 @@ export class PaymentsService {
     this.customerPartnerId = process.env.b54_CUSTOMER_PARTNER_ID;
   }
 
-  async create(createPaymentDto: CreatePaymentDto) {
+  async create(createPaymentDto: CreatePaymentDto[]) {
     try {
-      // connect to creat payment endpoint here, Not sure we have one
-      const paymentData: Payment =
-        this.paymentRepository.create(createPaymentDto);
-      await this.paymentRepository.save(paymentData);
-      return paymentData;
+      const payments = createPaymentDto.map((payment) => ({
+        transaction_reference: payment.order_reference,
+        amount: payment.amount,
+      }));
+
+      const response = await this.axiosInstance.post(`financing/bulk-payment`, {
+        cusstomer_partner_id: this.customerPartnerId,
+        payments,
+      });
+
+      if (response.data.status !== 'success') {
+        throw new HttpException(
+          'unable to make payment',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      createPaymentDto.forEach(async (payment) => {
+        const paymentData = this.paymentRepository.create(payment);
+        await this.paymentRepository.save(paymentData);
+      });
+
+      return {
+        status: 'success',
+        statusCode: 201,
+        message: 'Payment has been created successfully.',
+        data: [],
+      };
     } catch (error) {
       return error.message;
     }
