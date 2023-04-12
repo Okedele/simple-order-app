@@ -15,13 +15,13 @@ export class ClientsService {
     private readonly clientRepository: Repository<Client>,
   ) {
     this.axiosInstance = axios.create({
-        baseURL: process.env.b54_API,
+        baseURL: process.env.B54_API,
         headers: {
-            Authorization: process.env.b54_API_KEY,
+            Authorization: process.env.B54_APP_KEY,
             "Content-Type": 'application/json'
         }
     })
-    this.customerPartnerId = process.env.b54_CUSTOMER_PARTNER_ID
+    this.customerPartnerId = process.env.B54_CUSTOMER_PARTNER_ID
   }
 
   async create(createClientDto: CreateClientDto) {
@@ -33,7 +33,7 @@ export class ClientsService {
       if (client) {
         return client
       } else {
-        let result = await this.axiosInstance.post(`customer_partners/${this.customerPartnerId}/customers`, {
+        let result = await this.axiosInstance.post(`/customer_partners/${this.customerPartnerId}/customers`, {
           unique_id_type,
           unique_id,
           ...clientData

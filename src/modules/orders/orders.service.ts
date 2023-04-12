@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CreateOrderType } from '../../utils/types';
 import { Order } from '../../entities/orders.entity'
@@ -6,7 +6,6 @@ import { Client } from '../../entities/clients.entity'
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import axios from 'axios';
-// import randomstring from 'randomstring';
 const randomstring = require("randomstring")
 
 @Injectable()
@@ -25,6 +24,7 @@ export class OrdersService {
       reference: `simple-order-${randomString}`
     };
     const client = await this.clientRepository.findOne({ where: { id: body.client_id } });
+    if (client) throw new HttpException('Client does not exist', 400);
     await this.registerTransaction(
       body,
       {
@@ -82,8 +82,8 @@ export class OrdersService {
           }
         ]
       }
-      const { data, status } = await axios.post(
-        `${process.env.b54_API}/v1/transactions/register`,
+      await axios.post(
+        `${process.env.B54_API}/transactions/register`,
         payload,
         {
           headers: {
