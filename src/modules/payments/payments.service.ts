@@ -15,13 +15,13 @@ export class PaymentsService {
   ) {
     // Probably need to add this as a global helper/instance
     this.axiosInstance = axios.create({
-      baseURL: process.env.b54_API,
+      baseURL: process.env.B54_API,
       headers: {
-        Authorization: process.env.b54_API_KEY,
+        Authorization: process.env.B54_API_KEY,
         'Content-Type': 'application/json',
       },
     });
-    this.customerPartnerId = process.env.b54_CUSTOMER_PARTNER_ID;
+    this.customerPartnerId = process.env.B54_CUSTOMER_PARTNER_ID;
   }
 
   async create(createPaymentDto: CreatePaymentDto[]) {
