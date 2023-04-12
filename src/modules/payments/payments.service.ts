@@ -31,8 +31,8 @@ export class PaymentsService {
         amount: payment.amount,
       }));
 
-      const response = await this.axiosInstance.post(`financing/bulk-payment`, {
-        cusstomer_partner_id: this.customerPartnerId,
+      const response = await this.axiosInstance.post(`/financing/bulk-payment`, {
+        customer_partner_id: this.customerPartnerId,
         payments,
       });
 
